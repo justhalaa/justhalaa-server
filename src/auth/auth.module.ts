@@ -10,10 +10,18 @@ import { UtilsModule } from 'src/utils/utils.module';
 import { jwtConstants } from './constants';
 import { ResponseServiceModule } from 'src/response-service/response-service.module';
 import { LocationCordinates } from 'src/typeORM/entities/location_cordinates.entity';
+import { WorkSample } from 'src/typeORM/entities/work_samples.entity';
+import { FileAttachments } from 'src/typeORM/entities/file_attachments.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, OTP, LocationCordinates]),
+    TypeOrmModule.forFeature([
+      User,
+      OTP,
+      LocationCordinates,
+      WorkSample,
+      FileAttachments,
+    ]),
     ConfigModule,
     UtilsModule,
     ResponseServiceModule,

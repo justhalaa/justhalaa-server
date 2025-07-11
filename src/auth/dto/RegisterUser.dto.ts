@@ -1,4 +1,10 @@
-import { IsBoolean, IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class RegisterUserDto {
@@ -84,5 +90,14 @@ export class RegisterUserDto {
   })
   @IsNotEmpty()
   @IsString()
-  location_name: string;
+  locationName: string;
+
+  @ApiProperty({
+    description: 'Array of file attachment IDs to be linked as work samples',
+    example: [1, 2, 3],
+    required: false,
+    type: [Number],
+  })
+  @IsArray()
+  workSamples: number[];
 }

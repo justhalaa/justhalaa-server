@@ -1,8 +1,21 @@
 import { RegisterUserDto } from './dto/RegisterUser.dto';
 import { AuthService } from './auth.service';
-import { Body, Controller, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+} from '@nestjs/common';
 import { LoginUserDto, VerifyUserDto } from './dto/LoginUser.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBody,
+  ApiParam,
+} from '@nestjs/swagger';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -34,5 +47,14 @@ export class AuthController {
   @ApiBody({ type: VerifyUserDto })
   verifyOtp(@Body() dto: VerifyUserDto) {
     return this.authService.verifyOTP(dto);
+  }
+
+  @Get('user/:id')
+  @ApiOperation({ summary: 'Get user by ID' })
+  @ApiResponse({ status: 200, description: 'User retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiParam({ name: 'id', description: 'User ID', type: 'number' })
+  getUserById(@Param('id', ParseIntPipe) id: number) {
+    return this.authService.getUserById(id);
   }
 }

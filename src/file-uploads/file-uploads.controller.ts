@@ -105,6 +105,7 @@ export class FileUploadsController {
   ) {
     const uploadedFiles =
       await this.fileUploadsService.uploadMultipleFiles(files);
+    console.log(uploadedFiles);
     return this.responseService.sendSuccess(
       res,
       uploadedFiles,

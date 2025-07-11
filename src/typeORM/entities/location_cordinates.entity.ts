@@ -6,11 +6,11 @@ export class LocationCordinates {
   id: number;
 
   @Column()
-  location_name: string;
+  locationName: string;
 
   @Column()
   longitude: string;
 
-  @Column({ unique: true })
+  @Column()
   latitude: string;
 }
