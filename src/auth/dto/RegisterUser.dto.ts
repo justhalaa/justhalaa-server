@@ -1,0 +1,88 @@
+import { IsBoolean, IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+
+export class RegisterUserDto {
+  @ApiProperty({
+    description: 'The full name of the user',
+    example: 'John Doe',
+  })
+  @IsNotEmpty()
+  @IsString()
+  full_name: string;
+
+  @ApiProperty({
+    description: 'The email address of the user',
+    example: 'john.doe@example.com',
+  })
+  @IsNotEmpty()
+  @IsEmail()
+  email: string;
+
+  @ApiProperty({
+    description: 'The phone number of the user',
+    example: '+1234567890',
+  })
+  @IsNotEmpty()
+  @IsString()
+  phone_number: string;
+
+  @ApiProperty({
+    description: 'User Type Service Seeker / Provider',
+    example: true,
+  })
+  @IsBoolean()
+  is_service_provider: boolean;
+
+  @ApiProperty({
+    description: 'The experience level of the user',
+    example: 'Intermediate',
+  })
+  @IsString()
+  experience: string;
+
+  @ApiProperty({
+    description: 'The availability of the user',
+    example: 'Weekends',
+  })
+  @IsString()
+  availability: string;
+
+  @ApiProperty({
+    description: 'Additional information about the user',
+    example: 'I am a passionate chef with 5 years of experience.',
+  })
+  @IsString()
+  about_you: string;
+
+  @ApiProperty({
+    description: 'Category Of Service',
+    example: 'Category',
+  })
+  @IsString()
+  category: string;
+
+  // Location Object
+  @ApiProperty({
+    description: 'The longitude of the user',
+    example: '1234567890',
+  })
+  @IsNotEmpty()
+  @IsString()
+  longitude: string;
+
+  @ApiProperty({
+    description: 'The latitude of the user',
+    example: '1234567890',
+  })
+  @IsNotEmpty()
+  @IsString()
+  latitude: string;
+
+  @ApiProperty({
+    description: 'The location name of the user',
+    example: 'Accra, Madina',
+  })
+  @IsNotEmpty()
+  @IsString()
+  location_name: string;
+}
