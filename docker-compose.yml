@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'
 
 services:
   backend:
@@ -7,10 +7,6 @@ services:
       dockerfile: Dockerfile
     image: just_halaa_server
     env_file: .env
-    deploy:
-      restart_policy:
-        condition: on-failure
-        max_attempts: 1
     restart: on-failure
     ports:
       - 3001:3001
