@@ -5,12 +5,10 @@ RUN apk add --no-cache openssl
 
 COPY package.json .
 
-RUN npm install
+RUN yarn install
 
 COPY . .
 
-RUN npm run migrate
-
 EXPOSE 3001
 
-CMD [ "npm", "run", "start" ]
+CMD [ "yarn", "run", "start" ]
