@@ -1,0 +1,20 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: just_halaa_server
+    env_file: .env
+    restart: on-failure
+    ports:
+      - "3001:3001"
+    # Optional: Add volumes for development
+    # volumes:
+    #   - .:/app
+    #   - /app/node_modules
+    # Optional: Add environment variables
+    # environment:
+    #   - NODE_ENV=development
+    # Optional: Add depends_on if you have other services
+    # depends_on:
+    #   - postgres
