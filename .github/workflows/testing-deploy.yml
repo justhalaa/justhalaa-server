@@ -1,0 +1,22 @@
+name: Testing CI/CD
+
+on:
+  push:
+    branches: ['develop']
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trust Git directory
+        run: git config --global --add safe.directory /home/***/backend/justhalaa-server
+
+      - name: SSH In EC2 Instance
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST_IP_ADDRESS }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /home/ubuntu/scripts && \
+            sudo bash deploy-event-backend.sh
