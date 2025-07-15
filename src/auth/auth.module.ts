@@ -12,6 +12,9 @@ import { ResponseServiceModule } from 'src/response-service/response-service.mod
 import { LocationCordinates } from 'src/typeORM/entities/location_cordinates.entity';
 import { WorkSample } from 'src/typeORM/entities/work_samples.entity';
 import { FileAttachments } from 'src/typeORM/entities/file_attachments.entity';
+import { RefreshToken } from 'src/typeORM/entities/refresh-token.entity';
+import { RefreshTokenService } from './services/refresh-token.service';
+import { TokenCleanupService } from './services/token-cleanup.service';
 
 @Module({
   imports: [
@@ -21,17 +24,19 @@ import { FileAttachments } from 'src/typeORM/entities/file_attachments.entity';
       LocationCordinates,
       WorkSample,
       FileAttachments,
+      RefreshToken,
     ]),
     ConfigModule,
     UtilsModule,
     ResponseServiceModule,
     JwtModule.register({
       global: true,
-      secret: jwtConstants.secret,
-      signOptions: { expiresIn: '24h' },
+      secret: jwtConstants.accessTokenSecret,
+      signOptions: { expiresIn: jwtConstants.accessTokenExpiry },
     }),
   ],
-  providers: [AuthService],
+  providers: [AuthService, RefreshTokenService, TokenCleanupService],
   controllers: [AuthController],
+  exports: [AuthService, RefreshTokenService],
 })
 export class AuthModule {}

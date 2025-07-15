@@ -8,7 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UtilsService } from 'src/utils/utils.service';
 import { ResponseService } from 'src/response-service/response-service.service';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { LoginUserDto, VerifyUserDto } from './dto/LoginUser.dto';
 import { otpTemplate } from 'src/helpers/emailTemplates/OTPTemplate';
 import * as speakeasy from 'speakeasy';
@@ -16,6 +16,9 @@ import { normalizeEmail } from 'src/helpers/normalizeEmail';
 import { LocationCordinates } from 'src/typeORM/entities/location_cordinates.entity';
 import { WorkSample } from 'src/typeORM/entities/work_samples.entity';
 import { FileAttachments } from 'src/typeORM/entities/file_attachments.entity';
+import { RefreshTokenService } from './services/refresh-token.service';
+import { TokenPairDto } from './dto/auth-response.dto';
+import { jwtConstants } from './constants';
 
 @Injectable()
 export class AuthService {
@@ -32,6 +35,7 @@ export class AuthService {
     private readonly config: ConfigService,
     private readonly utilsService: UtilsService,
     private readonly responseService: ResponseService,
+    private readonly refreshTokenService: RefreshTokenService,
   ) {}
 
   async register(userDetails: RegisterUserDto, res?: Response) {
@@ -140,7 +144,12 @@ export class AuthService {
 
         console.log(otp);
         // Send OTP to user
-        this.utilsService.sendEmail(otpTemplate(emailData), email, '', 'OTP');
+        await this.utilsService.sendEmail(
+          otpTemplate(emailData),
+          email,
+          '',
+          'OTP',
+        );
         return this.responseService.sendSuccess(
           res,
           null,
@@ -179,7 +188,7 @@ export class AuthService {
     }
   }
 
-  async verifyOTP(verifyDetails: VerifyUserDto, res?: Response) {
+  async verifyOTP(verifyDetails: VerifyUserDto, req?: Request, res?: Response) {
     try {
       const { email, otp } = verifyDetails;
       const checkExistance = await this.otpRepo.findOneBy({
@@ -197,8 +206,6 @@ export class AuthService {
       });
 
       if (verified) {
-        // Fix: There's an issue here with checkExistance.user
-        // You need to find the user first
         const user = await this.userRepo.findOneBy({
           email: normalizeEmail(email),
         });
@@ -207,18 +214,21 @@ export class AuthService {
           return this.responseService.sendNotFound(res, 'User not found', null);
         }
 
-        const token = await this.jwtService.signAsync({
-          id: user.id,
-          email: user.email,
-        });
-        console.log(token);
+        // Generate token pair
+        const tokenPair = await this.generateTokenPair(user, req);
+
+        // Set refresh token as HTTP-only cookie
+        if (res) {
+          this.setRefreshTokenCookie(res, tokenPair.refreshToken);
+        }
+
         await this.otpRepo.delete({
           email: normalizeEmail(email),
         });
 
         return this.responseService.sendSuccess(
           res,
-          { token },
+          tokenPair,
           'Login Successful',
         );
       } else {
@@ -270,5 +280,145 @@ export class AuthService {
         error,
       );
     }
+  }
+
+  async generateTokenPair(user: User, req?: Request): Promise<TokenPairDto> {
+    // Generate access token
+    const accessToken = this.refreshTokenService.generateAccessToken(user);
+
+    // Generate refresh token
+    const userAgent = req?.headers['user-agent'];
+    const ipAddress = req?.ip || req?.connection?.remoteAddress;
+
+    const refreshTokenEntity =
+      await this.refreshTokenService.generateRefreshToken(
+        user,
+        userAgent,
+        ipAddress,
+      );
+
+    return {
+      accessToken,
+      refreshToken: refreshTokenEntity.token,
+      expiresIn: 900, // 15 minutes in seconds
+      tokenType: 'Bearer',
+    };
+  }
+
+  async refreshTokens(refreshToken: string, req?: Request, res?: Response) {
+    try {
+      // Validate refresh token
+      const tokenEntity =
+        await this.refreshTokenService.validateRefreshToken(refreshToken);
+
+      // Rotate refresh token (generate new one and revoke old one)
+      const userAgent = req?.headers['user-agent'];
+      const ipAddress = req?.ip || req?.connection?.remoteAddress;
+
+      const newRefreshToken = await this.refreshTokenService.rotateRefreshToken(
+        refreshToken,
+        tokenEntity.user,
+        userAgent,
+        ipAddress,
+      );
+
+      // Generate new access token
+      const accessToken = this.refreshTokenService.generateAccessToken(
+        tokenEntity.user,
+      );
+
+      const tokenPair: TokenPairDto = {
+        accessToken,
+        refreshToken: newRefreshToken.token,
+        expiresIn: 900, // 15 minutes in seconds
+        tokenType: 'Bearer',
+      };
+
+      // Set new refresh token as HTTP-only cookie
+      if (res) {
+        this.setRefreshTokenCookie(res, tokenPair.refreshToken);
+      }
+
+      return this.responseService.sendSuccess(
+        res,
+        tokenPair,
+        'Tokens refreshed successfully',
+      );
+    } catch (error) {
+      return this.responseService.sendUnauthorized(
+        res,
+        'Invalid or expired refresh token',
+        null,
+      );
+    }
+  }
+
+  async logout(refreshToken: string, res?: Response) {
+    try {
+      if (refreshToken) {
+        await this.refreshTokenService.revokeToken(refreshToken);
+      }
+
+      // Clear refresh token cookie
+      if (res) {
+        this.clearRefreshTokenCookie(res);
+      }
+
+      return this.responseService.sendSuccess(
+        res,
+        null,
+        'Logged out successfully',
+      );
+    } catch (error) {
+      return this.responseService.sendServerError(
+        res,
+        'Internal Server Error',
+        error,
+      );
+    }
+  }
+
+  async logoutAll(userId: number, res?: Response) {
+    try {
+      await this.refreshTokenService.revokeAllUserTokens(userId);
+
+      // Clear refresh token cookie
+      if (res) {
+        this.clearRefreshTokenCookie(res);
+      }
+
+      return this.responseService.sendSuccess(
+        res,
+        null,
+        'Logged out from all devices successfully',
+      );
+    } catch (error) {
+      return this.responseService.sendServerError(
+        res,
+        'Internal Server Error',
+        error,
+      );
+    }
+  }
+
+  private setRefreshTokenCookie(res: Response, refreshToken: string): void {
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // HTTPS in production
+      sameSite: 'strict' as const,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+      path: '/auth/refresh', // Restrict cookie to refresh endpoint
+    };
+
+    res.cookie('refreshToken', refreshToken, cookieOptions);
+  }
+
+  private clearRefreshTokenCookie(res: Response): void {
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/auth/refresh',
+    });
   }
 }
