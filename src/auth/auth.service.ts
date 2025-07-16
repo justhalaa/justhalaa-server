@@ -142,7 +142,6 @@ export class AuthService {
           otp,
         };
 
-        console.log(otp);
         // Send OTP to user
         await this.utilsService.sendEmail(
           otpTemplate(emailData),
@@ -171,7 +170,6 @@ export class AuthService {
       const emailData = {
         otp,
       };
-      console.log(otp);
       // Send OTP to user
       this.utilsService.sendEmail(otpTemplate(emailData), email, '', 'OTP');
       return this.responseService.sendSuccess(
@@ -216,6 +214,7 @@ export class AuthService {
 
         // Generate token pair
         const tokenPair = await this.generateTokenPair(user, req);
+        console.log(tokenPair);
 
         // Set refresh token as HTTP-only cookie
         if (res) {
@@ -235,7 +234,6 @@ export class AuthService {
         return this.responseService.sendNotFound(res, 'OTP Expired', null);
       }
     } catch (error) {
-      console.log(error);
       return this.responseService.sendServerError(
         res,
         'Internal Server Error',

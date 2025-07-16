@@ -57,11 +57,7 @@ export class AuthController {
   })
   @ApiResponse({ status: 400, description: 'Invalid OTP' })
   @ApiBody({ type: VerifyUserDto })
-  verifyOtp(
-    @Body() dto: VerifyUserDto,
-    @Req() req: Request,
-    @Res() res: Response,
-  ) {
+  verifyOtp(@Body() dto: VerifyUserDto, @Req() req: Request, res: Response) {
     return this.authService.verifyOTP(dto, req, res);
   }
 
@@ -78,7 +74,7 @@ export class AuthController {
   refreshTokens(
     @Body() dto: RefreshTokenDto,
     @Req() req: Request,
-    @Res() res: Response,
+    res: Response,
   ) {
     // Try to get refresh token from cookie first, then from body
     const refreshToken = req.cookies?.refreshToken || dto?.refreshToken;
@@ -99,7 +95,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Logout user and revoke refresh token' })
   @ApiResponse({ status: 200, description: 'Logged out successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  logout(@Req() req: Request, @Res() res: Response) {
+  logout(@Req() req: Request, res: Response) {
     const refreshToken = req.cookies?.refreshToken;
     return this.authService.logout(refreshToken, res);
   }
@@ -113,7 +109,7 @@ export class AuthController {
     description: 'Logged out from all devices successfully',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  logoutAll(@Req() req: Request, @Res() res: Response) {
+  logoutAll(@Req() req: Request, res: Response) {
     const userId = req['user'].id;
     return this.authService.logoutAll(userId, res);
   }
@@ -126,7 +122,7 @@ export class AuthController {
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiParam({ name: 'id', description: 'User ID', type: 'number' })
-  getUserById(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+  getUserById(@Param('id', ParseIntPipe) id: number, res: Response) {
     return this.authService.getUserById(id, res);
   }
 
@@ -139,7 +135,7 @@ export class AuthController {
     description: 'Current user retrieved successfully',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  getCurrentUser(@Req() req: Request, @Res() res: Response) {
+  getCurrentUser(@Req() req: Request, res: Response) {
     const userId = req['user'].id;
     return this.authService.getUserById(userId, res);
   }

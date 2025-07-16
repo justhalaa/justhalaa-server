@@ -33,7 +33,6 @@ export class UtilsService {
       subject,
       html: template,
     };
-    console.log(mailOptions);
 
     await transporter.sendMail(mailOptions, (error) => {
       if (error) {
