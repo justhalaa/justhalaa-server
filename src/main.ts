@@ -8,7 +8,7 @@ async function bootstrap() {
 
   // CORS Handling
   app.enableCors({
-    origin: 'https://justhalaa-web.vercel.app/',
+    origin: 'https://justhalaa-web.vercel.app',
     methods: 'GET,POST,PUT,DELETE',
     credentials: true,
     allowedHeaders: 'Content-Type, Authorization',
