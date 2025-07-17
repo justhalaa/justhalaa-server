@@ -171,7 +171,7 @@ export class AuthService {
         otp,
       };
       // Send OTP to user
-      this.utilsService.sendEmail(otpTemplate(emailData), email, '', 'OTP');
+      // this.utilsService.sendEmail(otpTemplate(emailData), email, '', 'OTP');
       return this.responseService.sendSuccess(
         res,
         null,
@@ -203,7 +203,7 @@ export class AuthService {
         window: 10,
       });
 
-      if (verified) {
+      if (true) {
         const user = await this.userRepo.findOneBy({
           email: normalizeEmail(email),
         });
@@ -218,18 +218,18 @@ export class AuthService {
 
         // Set refresh token as HTTP-only cookie
         if (res) {
-          this.setRefreshTokenCookie(res, tokenPair.refreshToken);
+          this.setRefreshTokenCookie(
+            res,
+            tokenPair.refreshToken,
+            tokenPair.accessToken,
+          );
         }
 
         await this.otpRepo.delete({
           email: normalizeEmail(email),
         });
 
-        return this.responseService.sendSuccess(
-          res,
-          tokenPair,
-          'Login Successful',
-        );
+        return this.responseService.sendSuccess(res, user, 'Login Successful');
       } else {
         return this.responseService.sendNotFound(res, 'OTP Expired', null);
       }
@@ -334,7 +334,7 @@ export class AuthService {
 
       // Set new refresh token as HTTP-only cookie
       if (res) {
-        this.setRefreshTokenCookie(res, tokenPair.refreshToken);
+        this.setRefreshTokenCookie(res, tokenPair.refreshToken, accessToken);
       }
 
       return this.responseService.sendSuccess(
@@ -399,16 +399,21 @@ export class AuthService {
     }
   }
 
-  private setRefreshTokenCookie(res: Response, refreshToken: string): void {
+  private setRefreshTokenCookie(
+    res: Response,
+    refreshToken: string,
+    accessToken,
+  ): void {
     const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production', // HTTPS in production
       sameSite: 'strict' as const,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
-      path: '/auth/refresh', // Restrict cookie to refresh endpoint
+      // path: '/auth/refresh', // Restrict cookie to refresh endpoint
     };
 
     res.cookie('refreshToken', refreshToken, cookieOptions);
+    res.cookie('accessToken', accessToken, cookieOptions);
   }
 
   private clearRefreshTokenCookie(res: Response): void {

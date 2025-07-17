@@ -104,7 +104,6 @@ export class RefreshTokenService {
 
   generateAccessToken(user: User): string {
     const payload = {
-      sub: user.id,
       id: user.id,
       email: user.email,
       type: 'access',

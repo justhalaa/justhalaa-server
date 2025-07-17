@@ -11,7 +11,10 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.enableCors({
-    origin: true,
+    origin: 'https://justhalaa-web.vercel.app',
+    methods: 'GET,POST,PUT,DELETE',
+    credentials: true,
+    allowedHeaders: 'Content-Type, Authorization',
   });
 
   // Enable validation pipes globally

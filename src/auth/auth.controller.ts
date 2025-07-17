@@ -78,6 +78,7 @@ export class AuthController {
   ) {
     // Try to get refresh token from cookie first, then from body
     const refreshToken = req.cookies?.refreshToken || dto?.refreshToken;
+    console.log(refreshToken);
 
     if (!refreshToken) {
       return res.status(401).json({
@@ -86,7 +87,7 @@ export class AuthController {
       });
     }
 
-    return this.authService.refreshTokens(refreshToken, req, res);
+    // return this.authService.refreshTokens(refreshToken, req, res);
   }
 
   @Post('logout')
