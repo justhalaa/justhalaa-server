@@ -171,7 +171,7 @@ export class AuthService {
         otp,
       };
       // Send OTP to user
-      // this.utilsService.sendEmail(otpTemplate(emailData), email, '', 'OTP');
+      this.utilsService.sendEmail(otpTemplate(emailData), email, '', 'OTP');
       return this.responseService.sendSuccess(
         res,
         null,
@@ -203,7 +203,7 @@ export class AuthService {
         window: 10,
       });
 
-      if (true) {
+      if (verified) {
         const user = await this.userRepo.findOneBy({
           email: normalizeEmail(email),
         });
