@@ -16,7 +16,6 @@ export class FileUploadsService {
     if (!file) {
       throw new BadRequestException('No file uploaded');
     }
-    console.log(file);
     try {
       // Upload to Cloudinary
       const uploadResult = await this.cloudinaryService.uploadFile(file);

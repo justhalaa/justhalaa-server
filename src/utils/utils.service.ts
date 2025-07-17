@@ -36,6 +36,7 @@ export class UtilsService {
 
     await transporter.sendMail(mailOptions, (error) => {
       if (error) {
+        console.log(error);
         return error;
       } else {
         return 'Email sent';

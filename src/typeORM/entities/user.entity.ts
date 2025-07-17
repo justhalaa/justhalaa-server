@@ -11,6 +11,7 @@ import {
 import { LocationCordinates } from './location_cordinates.entity';
 import { WorkSample } from './work_samples.entity';
 import { FileAttachments } from './file_attachments.entity';
+import { RefreshToken } from './refresh-token.entity';
 
 @Entity()
 export class User {
@@ -55,4 +56,7 @@ export class User {
 
   @OneToMany(() => WorkSample, (worksample) => worksample.user)
   workSamples: WorkSample[];
+
+  @OneToMany(() => RefreshToken, (refreshToken) => refreshToken.user)
+  refreshTokens: RefreshToken[];
 }
