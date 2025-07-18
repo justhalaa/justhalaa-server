@@ -424,4 +424,55 @@ export class AuthService {
       path: '/auth/refresh',
     });
   }
+
+  async googleLogin(req: any, res?: Response) {
+    try {
+      if (!req.user) {
+        return this.responseService.sendUnauthorized(
+          res,
+          'No user from Google',
+          null,
+        );
+      }
+      console.log(req.user);
+
+      const { email, firstName, lastName, picture } = req.user;
+      const fullName = `${firstName} ${lastName}`;
+
+      // Check if user already exists
+      let user = await this.userRepo.findOneBy({ email });
+
+      if (!user) {
+        // Create new user with Google data - using your User entity structure
+        const newUser = this.userRepo.create({
+          email,
+          full_name: fullName,
+          phone_number: '', // Required field, will be empty for Google users initially
+        });
+        user = await this.userRepo.save(newUser);
+
+        // TODO: Handle profile image from Google if needed
+        // You might want to download and store the Google profile picture
+      }
+
+      // Generate token pair
+      const tokenPair = await this.generateTokenPair(user, req);
+
+      // Set refresh token as HTTP-only cookie
+      if (res) {
+        this.setRefreshTokenCookie(
+          res,
+          tokenPair.refreshToken,
+          tokenPair.accessToken,
+        );
+      }
+
+      // Redirect to frontend with success
+      const frontendUrl = this.config.get('FRONTEND_URL');
+      return res?.redirect(`${frontendUrl}`);
+    } catch (error) {
+      const frontendUrl = this.config.get('FRONTEND_URL');
+      return res?.redirect(`${frontendUrl}/auth/error`);
+    }
+  }
 }

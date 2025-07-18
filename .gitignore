@@ -3,6 +3,9 @@
 /node_modules
 /build
 
+GOOGLE_OAUTH_SETUP.md
+AUTHENTICATION_UPGRADE_SUMMARY.md
+
 # Logs
 logs
 *.log

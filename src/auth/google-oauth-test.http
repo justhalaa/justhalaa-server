@@ -1,0 +1,17 @@
+# Google OAuth Test Endpoints
+
+### 1. Initiate Google OAuth Login
+GET http://localhost:3001/auth/google
+
+### 2. Google OAuth Callback (This will be called by Google)
+# GET http://localhost:3001/auth/google/callback
+
+### 3. Test accessing protected route after Google login
+GET http://localhost:3001/auth/me
+Authorization: Bearer YOUR_ACCESS_TOKEN_HERE
+
+### 4. Test refresh token (if you have cookies set)
+POST http://localhost:3001/auth/refresh
+Content-Type: application/json
+
+{}
