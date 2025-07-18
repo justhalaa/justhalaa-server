@@ -24,6 +24,7 @@ import {
 import { Request, Response } from 'express';
 import { TokenResponseDto, RefreshTokenDto } from './dto/auth-response.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { GoogleAuthGuard } from './guards/google-auth.guard';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -110,8 +111,8 @@ export class AuthController {
     description: 'Logged out from all devices successfully',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  logoutAll(@Req() req: Request, res: Response) {
-    const userId = req['user'].id;
+  logoutAll(@Req() req: Request, @Res() res: Response) {
+    const userId = (req as any).user.id;
     return this.authService.logoutAll(userId, res);
   }
 
@@ -136,8 +137,27 @@ export class AuthController {
     description: 'Current user retrieved successfully',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  getCurrentUser(@Req() req: Request, res: Response) {
-    const userId = req['user'].id;
+  getCurrentUser(@Req() req: Request, @Res() res: Response) {
+    const userId = (req as any).user.id;
     return this.authService.getUserById(userId, res);
+  }
+
+  @Get('google')
+  @UseGuards(GoogleAuthGuard)
+  @ApiOperation({ summary: 'Initiate Google OAuth login' })
+  @ApiResponse({ status: 302, description: 'Redirect to Google OAuth' })
+  async googleAuth(@Req() req: Request) {
+    // Guard redirects to Google
+  }
+
+  @Get('google/callback')
+  @UseGuards(GoogleAuthGuard)
+  @ApiOperation({ summary: 'Google OAuth callback' })
+  @ApiResponse({
+    status: 302,
+    description: 'Redirect to frontend with auth result',
+  })
+  googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
+    return this.authService.googleLogin(req, res);
   }
 }

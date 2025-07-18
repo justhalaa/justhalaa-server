@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { PassportModule } from '@nestjs/passport';
 import { OTP } from 'src/typeORM/entities/otp.entity';
 import { User } from 'src/typeORM/entities/user.entity';
 import { AuthService } from './auth.service';
@@ -15,6 +16,7 @@ import { FileAttachments } from 'src/typeORM/entities/file_attachments.entity';
 import { RefreshToken } from 'src/typeORM/entities/refresh-token.entity';
 import { RefreshTokenService } from './services/refresh-token.service';
 import { TokenCleanupService } from './services/token-cleanup.service';
+import { GoogleStrategy } from './strategies/google.strategy';
 
 @Module({
   imports: [
@@ -26,6 +28,7 @@ import { TokenCleanupService } from './services/token-cleanup.service';
       FileAttachments,
       RefreshToken,
     ]),
+    PassportModule,
     ConfigModule,
     UtilsModule,
     ResponseServiceModule,
@@ -35,7 +38,12 @@ import { TokenCleanupService } from './services/token-cleanup.service';
       signOptions: { expiresIn: jwtConstants.accessTokenExpiry },
     }),
   ],
-  providers: [AuthService, RefreshTokenService, TokenCleanupService],
+  providers: [
+    AuthService,
+    RefreshTokenService,
+    TokenCleanupService,
+    GoogleStrategy,
+  ],
   controllers: [AuthController],
   exports: [AuthService, RefreshTokenService],
 })

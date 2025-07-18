@@ -26,7 +26,7 @@ export class ProtectedController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   getCurrentUserProfile(@Req() req: Request) {
-    const user = req['user']; // Contains: { sub, id, email, type }
+    const user = (req as any).user; // Contains: { sub, id, email, type }
     return {
       message: 'Profile data retrieved successfully',
       user: {
@@ -45,7 +45,7 @@ export class ProtectedController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   getDashboard(@Req() req: Request) {
-    const userId = req['user'].id;
+    const userId = (req as any).user.id;
 
     return {
       message: 'Dashboard data for user',
@@ -64,7 +64,7 @@ export class ProtectedController {
   @ApiResponse({ status: 200, description: 'Profile updated successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   updateProfile(@Body() updateData: any, @Req() req: Request) {
-    const userId = req['user'].id;
+    const userId = (req as any).user.id;
 
     // Your update logic here
     return {
@@ -98,7 +98,7 @@ export class MixedController {
   @ApiResponse({ status: 200, description: 'Private data retrieved' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   getPrivateData(@Req() req: Request) {
-    const user = req['user'];
+    const user = (req as any).user;
     return {
       message: 'This is private data',
       user: user.email,

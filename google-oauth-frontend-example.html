@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JustHalaa - Google OAuth Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 20px;
+        text-align: center;
+      }
+      .btn {
+        display: inline-block;
+        padding: 12px 24px;
+        margin: 10px;
+        background-color: #4285f4;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      .btn:hover {
+        background-color: #357ae8;
+      }
+      .success {
+        color: green;
+        padding: 20px;
+        background-color: #f0f8f0;
+        border-radius: 5px;
+        margin: 20px 0;
+      }
+      .error {
+        color: red;
+        padding: 20px;
+        background-color: #f8f0f0;
+        border-radius: 5px;
+        margin: 20px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>JustHalaa Google OAuth Test</h1>
+
+    <div id="status"></div>
+
+    <a href="http://localhost:3001/auth/google" class="btn">
+      🔐 Login with Google
+    </a>
+
+    <br /><br />
+
+    <button
+      onclick="testProtectedRoute()"
+      class="btn"
+      style="background-color: #28a745"
+    >
+      🔒 Test Protected Route
+    </button>
+
+    <button onclick="logout()" class="btn" style="background-color: #dc3545">
+      🚪 Logout
+    </button>
+
+    <script>
+      // Check URL parameters for auth status
+      const urlParams = new URLSearchParams(window.location.search);
+      const authStatus = window.location.pathname;
+
+      if (authStatus.includes('/auth/success')) {
+        document.getElementById('status').innerHTML =
+          '<div class="success">✅ Google OAuth login successful! You are now authenticated.</div>';
+      } else if (authStatus.includes('/auth/error')) {
+        document.getElementById('status').innerHTML =
+          '<div class="error">❌ Google OAuth login failed. Please try again.</div>';
+      }
+
+      async function testProtectedRoute() {
+        try {
+          const response = await fetch('http://localhost:3001/auth/me', {
+            method: 'GET',
+            credentials: 'include', // Include cookies
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            document.getElementById('status').innerHTML =
+              `<div class="success">✅ Protected route accessed successfully!<br>
+                        User: ${data.data.full_name} (${data.data.email})</div>`;
+          } else {
+            document.getElementById('status').innerHTML =
+              '<div class="error">❌ Failed to access protected route. Please login first.</div>';
+          }
+        } catch (error) {
+          document.getElementById('status').innerHTML =
+            '<div class="error">❌ Error accessing protected route: ' +
+            error.message +
+            '</div>';
+        }
+      }
+
+      async function logout() {
+        try {
+          const response = await fetch('http://localhost:3001/auth/logout', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (response.ok) {
+            document.getElementById('status').innerHTML =
+              '<div class="success">✅ Logged out successfully!</div>';
+          } else {
+            document.getElementById('status').innerHTML =
+              '<div class="error">❌ Logout failed.</div>';
+          }
+        } catch (error) {
+          document.getElementById('status').innerHTML =
+            '<div class="error">❌ Logout error: ' + error.message + '</div>';
+        }
+      }
+    </script>
+  </body>
+</html>
