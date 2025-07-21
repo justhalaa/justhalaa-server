@@ -18,7 +18,6 @@ import { WorkSample } from 'src/typeORM/entities/work_samples.entity';
 import { FileAttachments } from 'src/typeORM/entities/file_attachments.entity';
 import { RefreshTokenService } from './services/refresh-token.service';
 import { TokenPairDto } from './dto/auth-response.dto';
-import { jwtConstants } from './constants';
 
 @Injectable()
 export class AuthService {
@@ -126,7 +125,11 @@ export class AuthService {
     try {
       const { email } = loginDetails;
 
-      // const checkForExistingUser = this.checkForExistingUser(email);
+      // Check user existance
+      const checkForExistingUser = await this.checkForExistingUser(email);
+      if (!checkForExistingUser) {
+        return this.responseService.sendNotFound(res, 'User Not Found', null);
+      }
 
       const otpExistance = await this.otpRepo.findOneBy({
         email,
@@ -214,7 +217,6 @@ export class AuthService {
 
         // Generate token pair
         const tokenPair = await this.generateTokenPair(user, req);
-        console.log(tokenPair);
 
         // Set refresh token as HTTP-only cookie
         if (res) {
@@ -434,7 +436,6 @@ export class AuthService {
           null,
         );
       }
-      console.log(req.user);
 
       const { email, firstName, lastName, picture } = req.user;
       const fullName = `${firstName} ${lastName}`;
@@ -466,13 +467,12 @@ export class AuthService {
           tokenPair.accessToken,
         );
       }
-
       // Redirect to frontend with success
       const frontendUrl = this.config.get('FRONTEND_URL');
-      return res?.redirect(`${frontendUrl}`);
+      return res?.redirect(`${frontendUrl}?loginStatus=success`);
     } catch (error) {
       const frontendUrl = this.config.get('FRONTEND_URL');
-      return res?.redirect(`${frontendUrl}/auth/error`);
+      return res?.redirect(`${frontendUrl}?loginStatus=error`);
     }
   }
 }
