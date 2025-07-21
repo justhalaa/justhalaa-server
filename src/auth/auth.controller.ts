@@ -36,8 +36,9 @@ export class AuthController {
   @ApiResponse({ status: 201, description: 'User successfully created' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiBody({ type: RegisterUserDto })
-  createUser(@Body() dto: RegisterUserDto) {
-    return this.authService.register(dto);
+  async createUser(@Body() dto: RegisterUserDto, @Res() res: Response) {
+    const result = await this.authService.register(dto);
+    return res.status(result.statusCode).json(result);
   }
 
   @Post('login')
@@ -45,8 +46,9 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'OTP sent successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiBody({ type: LoginUserDto })
-  loginUser(@Body() dto: LoginUserDto) {
-    return this.authService.login(dto);
+  async loginUser(@Body() dto: LoginUserDto, @Res() res: Response) {
+    const results = await this.authService.login(dto);
+    return res.status(results.statusCode).json(results);
   }
 
   @Post('verify-otp')
@@ -58,8 +60,13 @@ export class AuthController {
   })
   @ApiResponse({ status: 400, description: 'Invalid OTP' })
   @ApiBody({ type: VerifyUserDto })
-  verifyOtp(@Body() dto: VerifyUserDto, @Req() req: Request, res: Response) {
-    return this.authService.verifyOTP(dto, req, res);
+  async verifyOtp(
+    @Body() dto: VerifyUserDto,
+    @Req() req: Request,
+    res: Response,
+  ) {
+    const results = await this.authService.verifyOTP(dto, req, res);
+    return res.status(results.statusCode).json(results);
   }
 
   @Post('refresh')
@@ -79,7 +86,6 @@ export class AuthController {
   ) {
     // Try to get refresh token from cookie first, then from body
     const refreshToken = req.cookies?.refreshToken || dto?.refreshToken;
-    console.log(refreshToken);
 
     if (!refreshToken) {
       return res.status(401).json({
@@ -97,9 +103,10 @@ export class AuthController {
   @ApiOperation({ summary: 'Logout user and revoke refresh token' })
   @ApiResponse({ status: 200, description: 'Logged out successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  logout(@Req() req: Request, res: Response) {
+  async logout(@Req() req: Request, res: Response) {
     const refreshToken = req.cookies?.refreshToken;
-    return this.authService.logout(refreshToken, res);
+    const results = await this.authService.logout(refreshToken, res);
+    return res.status(results.statusCode).json(results);
   }
 
   @Post('logout-all')
@@ -111,9 +118,10 @@ export class AuthController {
     description: 'Logged out from all devices successfully',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  logoutAll(@Req() req: Request, @Res() res: Response) {
+  async logoutAll(@Req() req: Request, @Res() res: Response) {
     const userId = (req as any).user.id;
-    return this.authService.logoutAll(userId, res);
+    const result = await this.authService.logoutAll(userId, res);
+    return res.status(result.statusCode).json(result);
   }
 
   @Get('user/:id')
@@ -124,8 +132,9 @@ export class AuthController {
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiParam({ name: 'id', description: 'User ID', type: 'number' })
-  getUserById(@Param('id', ParseIntPipe) id: number, res: Response) {
-    return this.authService.getUserById(id, res);
+  async getUserById(@Param('id', ParseIntPipe) id: number, res: Response) {
+    const result = await this.authService.getUserById(id, res);
+    return res.status(result.statusCode).json(result);
   }
 
   @Get('me')
@@ -137,9 +146,10 @@ export class AuthController {
     description: 'Current user retrieved successfully',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  getCurrentUser(@Req() req: Request, @Res() res: Response) {
+  async getCurrentUser(@Req() req: Request, @Res() res: Response) {
     const userId = (req as any).user.id;
-    return this.authService.getUserById(userId, res);
+    const result = await this.authService.getUserById(userId, res);
+    return res.status(result.statusCode).json(result);
   }
 
   @Get('google')

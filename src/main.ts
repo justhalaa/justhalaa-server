@@ -1,8 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { ValidationPipe } from '@nestjs/common';
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
+import { ValidationError } from 'class-validator';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -22,10 +23,32 @@ async function bootstrap() {
   });
 
   // Enable validation pipes globally
+  // app.useGlobalPipes(
+  //   new ValidationPipe({
+  //     whitelist: true,
+  //     transform: true,
+  //   }),
+  // );
+
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,
-      transform: true,
+      exceptionFactory: (errors: ValidationError[]) => {
+        const message: Record<string, string> = {};
+
+        errors.forEach((error) => {
+          if (error.constraints) {
+            message[error.property] = Object.values(error.constraints)[0];
+          }
+        });
+
+        return new BadRequestException({
+          success: false,
+          statusCode: 400,
+          message, // now this is an object not an array
+          data: null,
+          error: 'Bad Request',
+        });
+      },
     }),
   );
 

@@ -18,7 +18,6 @@ import { WorkSample } from 'src/typeORM/entities/work_samples.entity';
 import { FileAttachments } from 'src/typeORM/entities/file_attachments.entity';
 import { RefreshTokenService } from './services/refresh-token.service';
 import { TokenPairDto } from './dto/auth-response.dto';
-import { jwtConstants } from './constants';
 
 @Injectable()
 export class AuthService {
@@ -40,8 +39,8 @@ export class AuthService {
 
   async register(userDetails: RegisterUserDto, res?: Response) {
     try {
-      const { email } = userDetails;
       const {
+        email,
         longitude,
         latitude,
         locationName,
@@ -49,65 +48,41 @@ export class AuthService {
         ...restUserDetails
       } = userDetails;
 
-      // check for existing user with the email
-      const checkForExistingUser = await this.userRepo.findOneBy({
-        email,
-      });
-
-      if (checkForExistingUser)
+      // Check for existing user
+      const existingUser = await this.userRepo.findOneBy({ email });
+      if (existingUser) {
         return this.responseService.sendAlreadyExists(
           res,
           'User with Email Already Exists',
         );
-
-      // Store User Location
-      const createLocation = this.locationRepo.create({
-        locationName,
-        longitude,
-        latitude,
-      });
-      const saveLocation = await this.locationRepo.save(createLocation);
-
-      // Store Work Samples
-      let userWorkSamples = [];
-      if (workSamples && workSamples.length > 0) {
-        // Find all file attachments with the provided IDs
-        const fileAttachmentIds = workSamples as number[];
-        const fileAttachments =
-          await this.fileAttachmentRepo.findByIds(fileAttachmentIds);
-
-        if (fileAttachments.length > 0) {
-          // Create work sample entries
-          const workSampleEntities = fileAttachments.map((fileAttachment) => {
-            const workSample = new WorkSample();
-            workSample.fileAttachment = fileAttachment;
-            return workSample;
-          });
-
-          // Save work samples without user association yet
-          userWorkSamples = await this.workSampleRepo.save(workSampleEntities);
-        }
       }
 
+      // Create location only if location data is provided
+      let savedLocation = null;
+      if (this.hasLocationData(longitude, latitude, locationName)) {
+        savedLocation = await this.createLocation({
+          longitude,
+          latitude,
+          locationName,
+        });
+      }
+
+      // Create user
       const user = this.userRepo.create({
         ...restUserDetails,
-        location: saveLocation,
+        email,
+        location: savedLocation,
       });
       const savedUser = await this.userRepo.save(user);
 
-      // Now associate the work samples with the saved user
-      if (userWorkSamples.length > 0) {
-        // Update each work sample with the user reference
-        userWorkSamples.forEach((workSample) => {
-          workSample.user = savedUser;
-        });
-
-        // Save the updated work samples
-        await this.workSampleRepo.save(userWorkSamples);
+      // Create work samples only if provided
+      if (workSamples?.length > 0) {
+        await this.createWorkSamples(workSamples as number[], savedUser);
       }
 
-      // Send User Welcome Message
+      // Send welcome email
       await this.utilsService.sendEmail('New user', email, '', 'Welcome');
+
       return this.responseService.sendSuccess(
         res,
         savedUser,
@@ -122,11 +97,48 @@ export class AuthService {
     }
   }
 
+  private hasLocationData(
+    longitude: string,
+    latitude: string,
+    locationName: string,
+  ): boolean {
+    return longitude != null || latitude != null || locationName != null;
+  }
+
+  private async createLocation(locationData: {
+    longitude: string;
+    latitude: string;
+    locationName: string;
+  }) {
+    const location = this.locationRepo.create(locationData);
+    return await this.locationRepo.save(location);
+  }
+
+  private async createWorkSamples(workSampleIds: number[], user: any) {
+    const fileAttachments =
+      await this.fileAttachmentRepo.findByIds(workSampleIds);
+
+    if (fileAttachments.length === 0) return;
+
+    const workSampleEntities = fileAttachments.map((fileAttachment) => {
+      const workSample = new WorkSample();
+      workSample.fileAttachment = fileAttachment;
+      workSample.user = user;
+      return workSample;
+    });
+
+    await this.workSampleRepo.save(workSampleEntities);
+  }
+
   async login(loginDetails: LoginUserDto, res?: Response) {
     try {
       const { email } = loginDetails;
 
-      // const checkForExistingUser = this.checkForExistingUser(email);
+      // Check user existance
+      const checkForExistingUser = await this.checkForExistingUser(email);
+      if (!checkForExistingUser) {
+        return this.responseService.sendNotFound(res, 'User Not Found', null);
+      }
 
       const otpExistance = await this.otpRepo.findOneBy({
         email,
@@ -214,7 +226,6 @@ export class AuthService {
 
         // Generate token pair
         const tokenPair = await this.generateTokenPair(user, req);
-        console.log(tokenPair);
 
         // Set refresh token as HTTP-only cookie
         if (res) {
@@ -434,7 +445,6 @@ export class AuthService {
           null,
         );
       }
-      console.log(req.user);
 
       const { email, firstName, lastName, picture } = req.user;
       const fullName = `${firstName} ${lastName}`;
@@ -466,13 +476,12 @@ export class AuthService {
           tokenPair.accessToken,
         );
       }
-
       // Redirect to frontend with success
       const frontendUrl = this.config.get('FRONTEND_URL');
-      return res?.redirect(`${frontendUrl}`);
+      return res?.redirect(`${frontendUrl}?loginStatus=success`);
     } catch (error) {
       const frontendUrl = this.config.get('FRONTEND_URL');
-      return res?.redirect(`${frontendUrl}/auth/error`);
+      return res?.redirect(`${frontendUrl}?loginStatus=error`);
     }
   }
 }
