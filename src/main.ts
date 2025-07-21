@@ -11,7 +11,11 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.enableCors({
-    origin: ['https://justhalaa-web.vercel.app', 'http://localhost:3001'],
+    origin: [
+      'https://justhalaa-web.vercel.app',
+      'http://localhost:3001',
+      'http://localhost:4200',
+    ],
     methods: 'GET,POST,PUT,DELETE',
     credentials: true,
     allowedHeaders: 'Content-Type, Authorization',
