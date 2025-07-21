@@ -3,6 +3,7 @@ import {
   IsBoolean,
   IsEmail,
   IsNotEmpty,
+  IsOptional,
   IsString,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
@@ -43,6 +44,7 @@ export class RegisterUserDto {
     description: 'The experience level of the user',
     example: 'Intermediate',
   })
+  @IsOptional()
   @IsString()
   experience: string;
 
@@ -51,6 +53,7 @@ export class RegisterUserDto {
     example: 'Weekends',
   })
   @IsString()
+  @IsOptional()
   availability: string;
 
   @ApiProperty({
@@ -58,6 +61,7 @@ export class RegisterUserDto {
     example: 'I am a passionate chef with 5 years of experience.',
   })
   @IsString()
+  @IsOptional()
   about_you: string;
 
   @ApiProperty({
@@ -65,6 +69,7 @@ export class RegisterUserDto {
     example: 'Category',
   })
   @IsString()
+  @IsOptional()
   category: string;
 
   // Location Object
@@ -72,15 +77,15 @@ export class RegisterUserDto {
     description: 'The longitude of the user',
     example: '1234567890',
   })
-  @IsNotEmpty()
   @IsString()
+  @IsOptional()
   longitude: string;
 
   @ApiProperty({
     description: 'The latitude of the user',
     example: '1234567890',
   })
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   latitude: string;
 
@@ -88,7 +93,7 @@ export class RegisterUserDto {
     description: 'The location name of the user',
     example: 'Accra, Madina',
   })
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   locationName: string;
 
@@ -98,6 +103,7 @@ export class RegisterUserDto {
     required: false,
     type: [Number],
   })
+  @IsOptional()
   @IsArray()
   workSamples: number[];
 }
