@@ -63,7 +63,7 @@ export class AuthController {
   async verifyOtp(
     @Body() dto: VerifyUserDto,
     @Req() req: Request,
-    res: Response,
+    @Res() res: Response,
   ) {
     const results = await this.authService.verifyOTP(dto, req, res);
     return res.status(results.statusCode).json(results);

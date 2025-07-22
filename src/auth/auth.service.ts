@@ -245,6 +245,7 @@ export class AuthService {
         return this.responseService.sendNotFound(res, 'OTP Expired', null);
       }
     } catch (error) {
+      console.log(error);
       return this.responseService.sendServerError(
         res,
         'Internal Server Error',
