@@ -439,8 +439,6 @@ export class AuthService {
 
   async googleLogin(req: any, res: Response, redirectUrl: string) {
     const frontendUrl = this.config.get('FRONTEND_URL');
-
-    console.log(redirectUrl, 'ghana boy');
     try {
       if (!req.user) {
         return this.responseService.sendUnauthorized(

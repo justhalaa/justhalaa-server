@@ -21,6 +21,7 @@ import {
   ApiParam,
   ApiBearerAuth,
   ApiCookieAuth,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { TokenResponseDto, RefreshTokenDto } from './dto/auth-response.dto';
@@ -155,6 +156,12 @@ export class AuthController {
 
   @Get('google-entry')
   @ApiOperation({ summary: 'Initiate Google OAuth login' })
+  @ApiQuery({
+    name: 'redirectTo',
+    required: true,
+    description: 'Redirect URL',
+    example: 'http://localhost:4200',
+  })
   @ApiResponse({ status: 302, description: 'Redirect to Google OAuth' })
   async googleAuthEntry(
     @Req() req: Request,
@@ -170,8 +177,8 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(GoogleAuthGuard)
-  @ApiOperation({ summary: 'Initiate Google OAuth login' })
-  @ApiResponse({ status: 302, description: 'Redirect to Google OAuth' })
+  // @ApiOperation({ summary: 'Initiate Google OAuth login' })
+  // @ApiResponse({ status: 302, description: 'Redirect to Google OAuth' })
   async googleAuth(@Query('state') state: string, @Req() req: Request) {
     // Guard redirects to Google
   }
