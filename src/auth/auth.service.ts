@@ -437,7 +437,10 @@ export class AuthService {
     });
   }
 
-  async googleLogin(req: any, res?: Response) {
+  async googleLogin(req: any, res: Response, redirectUrl: string) {
+    const frontendUrl = this.config.get('FRONTEND_URL');
+
+    console.log(redirectUrl, 'ghana boy');
     try {
       if (!req.user) {
         return this.responseService.sendUnauthorized(
@@ -478,11 +481,9 @@ export class AuthService {
         );
       }
       // Redirect to frontend with success
-      const frontendUrl = this.config.get('FRONTEND_URL');
-      return res?.redirect(`${frontendUrl}?loginStatus=success`);
+      return res?.redirect(`${redirectUrl || frontendUrl}?loginStatus=success`);
     } catch (error) {
-      const frontendUrl = this.config.get('FRONTEND_URL');
-      return res?.redirect(`${frontendUrl}?loginStatus=error`);
+      return res?.redirect(`${redirectUrl || frontendUrl}?loginStatus=error`);
     }
   }
 }

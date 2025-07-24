@@ -7,6 +7,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Query,
   Req,
   Res,
   UseGuards,
@@ -152,11 +153,26 @@ export class AuthController {
     return res.status(result.statusCode).json(result);
   }
 
+  @Get('google-entry')
+  @ApiOperation({ summary: 'Initiate Google OAuth login' })
+  @ApiResponse({ status: 302, description: 'Redirect to Google OAuth' })
+  async googleAuthEntry(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Query('redirectTo') redirectTo: string,
+  ) {
+    const state = Buffer.from(JSON.stringify({ redirectTo })).toString(
+      'base64',
+    );
+    // Guard redirects to Google
+    res.redirect(`/auth/google?state=${state}`);
+  }
+
   @Get('google')
   @UseGuards(GoogleAuthGuard)
   @ApiOperation({ summary: 'Initiate Google OAuth login' })
   @ApiResponse({ status: 302, description: 'Redirect to Google OAuth' })
-  async googleAuth(@Req() req: Request) {
+  async googleAuth(@Query('state') state: string, @Req() req: Request) {
     // Guard redirects to Google
   }
 
@@ -168,6 +184,12 @@ export class AuthController {
     description: 'Redirect to frontend with auth result',
   })
   googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
-    return this.authService.googleLogin(req, res);
+    const user = req.user as any;
+    const state = user.state;
+
+    const jsonString = Buffer.from(state, 'base64').toString('utf8');
+    const decodedState = JSON.parse(jsonString);
+
+    return this.authService.googleLogin(req, res, decodedState.redirectTo);
   }
 }
