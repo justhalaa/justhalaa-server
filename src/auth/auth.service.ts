@@ -416,10 +416,10 @@ export class AuthService {
     refreshToken: string,
     accessToken,
   ): void {
-    const cookieOptions = {
+    const cookieOptions: any = {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'development', // HTTPS in production
-      sameSite: 'strict' as const,
+      secure: 'true', // HTTPS in production
+      sameSite: 'none',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
       // path: '/auth/refresh', // Restrict cookie to refresh endpoint
     };
