@@ -431,9 +431,9 @@ export class AuthService {
   private clearRefreshTokenCookie(res: Response): void {
     res.clearCookie('refreshToken', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      path: '/auth/refresh',
+      secure: true,
+      sameSite: 'none',
+      // path: '/auth/refresh',
     });
   }
 
