@@ -163,7 +163,7 @@ export class AuthService {
         );
         return this.responseService.sendSuccess(
           res,
-          null,
+          { otp },
           'OTP sent Successfully ',
         );
       }
@@ -186,7 +186,7 @@ export class AuthService {
       this.utilsService.sendEmail(otpTemplate(emailData), email, '', 'OTP');
       return this.responseService.sendSuccess(
         res,
-        null,
+        { otp },
         'OTP sent Successfully ',
       );
     } catch (error) {
@@ -479,7 +479,8 @@ export class AuthService {
         );
       }
       // Redirect to frontend with success
-      return res?.redirect(`${redirectUrl || frontendUrl}?loginStatus=success`);
+      // return res?.redirect(`${redirectUrl || frontendUrl}?loginStatus=success`);
+      return res?.redirect(`${redirectUrl || frontendUrl}`);
     } catch (error) {
       return res?.redirect(`${redirectUrl || frontendUrl}?loginStatus=error`);
     }
