@@ -418,7 +418,7 @@ export class AuthService {
   ): void {
     const cookieOptions = {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // HTTPS in production
+      secure: process.env.NODE_ENV === 'development', // HTTPS in production
       sameSite: 'strict' as const,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
       // path: '/auth/refresh', // Restrict cookie to refresh endpoint
