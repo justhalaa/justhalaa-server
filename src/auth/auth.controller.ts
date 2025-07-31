@@ -84,7 +84,7 @@ export class AuthController {
   refreshTokens(
     @Body() dto: RefreshTokenDto,
     @Req() req: Request,
-    res: Response,
+    @Res() res: Response,
   ) {
     // Try to get refresh token from cookie first, then from body
     const refreshToken = req.cookies?.refreshToken || dto?.refreshToken;
@@ -105,7 +105,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Logout user and revoke refresh token' })
   @ApiResponse({ status: 200, description: 'Logged out successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async logout(@Req() req: Request, res: Response) {
+  async logout(@Req() req: Request, @Res() res: Response) {
     const refreshToken = req.cookies?.refreshToken;
     const results = await this.authService.logout(refreshToken, res);
     return res.status(results.statusCode).json(results);
@@ -134,7 +134,10 @@ export class AuthController {
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiParam({ name: 'id', description: 'User ID', type: 'number' })
-  async getUserById(@Param('id', ParseIntPipe) id: number, res: Response) {
+  async getUserById(
+    @Param('id', ParseIntPipe) id: number,
+    @Res() res: Response,
+  ) {
     const result = await this.authService.getUserById(id, res);
     return res.status(result.statusCode).json(result);
   }
