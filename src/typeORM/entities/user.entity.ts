@@ -12,6 +12,7 @@ import { LocationCordinates } from './location_cordinates.entity';
 import { WorkSample } from './work_samples.entity';
 import { FileAttachments } from './file_attachments.entity';
 import { RefreshToken } from './refresh-token.entity';
+import { Product } from './product.entity';
 
 @Entity()
 export class User {
@@ -59,4 +60,7 @@ export class User {
 
   @OneToMany(() => RefreshToken, (refreshToken) => refreshToken.user)
   refreshTokens: RefreshToken[];
+
+  @OneToMany(() => Product, (product) => product.user)
+  products: Product[];
 }

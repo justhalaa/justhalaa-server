@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { Product } from './product.entity';
 
 @Entity()
 export class FileAttachments {
@@ -16,4 +17,8 @@ export class FileAttachments {
 
   @Column()
   fileType: string;
+
+  // Optional relation to Product for product images
+  @ManyToOne(() => Product, (product) => product.images, { nullable: true })
+  product: Product;
 }

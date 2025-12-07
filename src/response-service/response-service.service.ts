@@ -96,4 +96,26 @@ export class ResponseService {
       error,
     );
   }
+
+  // Generic success helper (returns response object without sending)
+  success(message: string, data: any = null, statusCode: number = 200) {
+    return {
+      success: true,
+      statusCode,
+      message,
+      data,
+      error: null,
+    };
+  }
+
+  // Generic error helper (returns response object without sending)
+  error(message: string, statusCode: number = 500, error: any = null) {
+    return {
+      success: false,
+      statusCode,
+      message,
+      data: null,
+      error,
+    };
+  }
 }
