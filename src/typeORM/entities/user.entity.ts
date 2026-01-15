@@ -13,6 +13,7 @@ import { WorkSample } from './work_samples.entity';
 import { FileAttachments } from './file_attachments.entity';
 import { RefreshToken } from './refresh-token.entity';
 import { Product } from './product.entity';
+import { Service } from './service.entity';
 
 @Entity()
 export class User {
@@ -63,4 +64,7 @@ export class User {
 
   @OneToMany(() => Product, (product) => product.user)
   products: Product[];
+
+  @OneToMany(() => Service, (service) => service.user)
+  services: Service[];
 }

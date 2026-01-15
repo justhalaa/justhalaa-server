@@ -9,6 +9,7 @@ import { UtilsModule } from './utils/utils.module';
 import { ResponseServiceModule } from './response-service/response-service.module';
 import { FileUploadsModule } from './file-uploads/file-uploads.module';
 import { ProductsModule } from './products/products.module';
+import { ServicesModule } from './services/services.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { ProductsModule } from './products/products.module';
     ResponseServiceModule,
     FileUploadsModule,
     ProductsModule,
+    ServicesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
