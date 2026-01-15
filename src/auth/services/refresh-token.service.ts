@@ -111,7 +111,7 @@ export class RefreshTokenService {
 
     return this.jwtService.sign(payload, {
       secret: jwtConstants.accessTokenSecret,
-      expiresIn: jwtConstants.accessTokenExpiry,
+      expiresIn: jwtConstants.accessTokenExpiry as any,
     });
   }
 

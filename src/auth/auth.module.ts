@@ -35,7 +35,7 @@ import { GoogleStrategy } from './strategies/google.strategy';
     JwtModule.register({
       global: true,
       secret: jwtConstants.accessTokenSecret,
-      signOptions: { expiresIn: jwtConstants.accessTokenExpiry },
+      signOptions: { expiresIn: jwtConstants.accessTokenExpiry as any },
     }),
   ],
   providers: [
